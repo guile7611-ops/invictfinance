@@ -961,16 +961,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateRecurrence = async (id: string, updates: any) => {
     if (!user) return;
 
-    // Map camelCase to snake_case for the database
-    const dbUpdates: any = { ...updates };
-    if (dbUpdates.dayOfMonth !== undefined) {
-      dbUpdates.day_of_month = dbUpdates.dayOfMonth;
-      delete dbUpdates.dayOfMonth;
-    }
-    if (dbUpdates.nextDueDate !== undefined) {
-      dbUpdates.next_due_date = dbUpdates.nextDueDate;
-      delete dbUpdates.nextDueDate;
-    }
+    // Mapeamento defensivo para garantir apenas colunas snake_case no Supabase
+    const dbUpdates: any = {};
+    if (updates.title !== undefined) dbUpdates.title = updates.title;
+    if (updates.amount !== undefined) dbUpdates.amount = parseFloat(updates.amount);
+    if (updates.type !== undefined) dbUpdates.type = updates.type;
+    if (updates.category !== undefined) dbUpdates.category = updates.category;
+    if (updates.status !== undefined) dbUpdates.status = updates.status;
+    
+    // Mapear variações de nomes de colunas para datas
+    if (updates.dayOfMonth !== undefined) dbUpdates.day_of_month = updates.dayOfMonth;
+    if (updates.day_of_month !== undefined) dbUpdates.day_of_month = updates.day_of_month;
+    
+    if (updates.nextDueDate !== undefined) dbUpdates.next_due_date = updates.nextDueDate;
+    if (updates.next_due_date !== undefined) dbUpdates.next_due_date = updates.next_due_date;
 
     const { error } = await supabase
       .from('recurrences')
