@@ -960,9 +960,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateRecurrence = async (id: string, updates: any) => {
     if (!user) return;
+
+    // Map camelCase to snake_case for the database
+    const dbUpdates: any = { ...updates };
+    if (dbUpdates.dayOfMonth !== undefined) {
+      dbUpdates.day_of_month = dbUpdates.dayOfMonth;
+      delete dbUpdates.dayOfMonth;
+    }
+    if (dbUpdates.nextDueDate !== undefined) {
+      dbUpdates.next_due_date = dbUpdates.nextDueDate;
+      delete dbUpdates.nextDueDate;
+    }
+
     const { error } = await supabase
       .from('recurrences')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id);
     
     if (error) throw error;
