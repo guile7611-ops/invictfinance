@@ -127,6 +127,7 @@ type AppContextValue = {
   setViewMode: (mode: 'Mês' | 'Trimestre' | 'Ano') => void;
   displayMode: 'grid' | 'timeline';
   setDisplayMode: (mode: 'grid' | 'timeline') => void;
+  resetAllData: () => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
-import { Trash2, ShieldAlert, Database, Github, Globe } from "lucide-react";
+import { Trash2, ShieldAlert, Database, LayoutDashboard, Globe } from "lucide-react";
 
 export default function SettingsView() {
   const { resetAllData } = useApp();
@@ -79,7 +79,7 @@ export default function SettingsView() {
                       <Globe size={12} /> Vercel
                    </div>
                    <div style={{ background: "var(--bg-main)", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px" }}>
-                      <Github size={12} /> GitHub
+                      <LayoutDashboard size={12} /> GitHub
                    </div>
                 </div>
               </div>
