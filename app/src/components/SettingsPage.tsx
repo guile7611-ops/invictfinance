@@ -3,7 +3,7 @@
 import { useApp } from "@/context/AppContext";
 import { Trash2, ShieldAlert, Database, LayoutDashboard, Globe } from "lucide-react";
 
-export default function SettingsView() {
+export default function SettingsPage() {
   const { resetAllData } = useApp();
 
   return (
