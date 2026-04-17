@@ -740,21 +740,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const projectedBalance = useMemo(() => {
     // Projeção do saldo no último dia do período visível
-    const futureIncome = occurrences
-      .filter(o => o.type === 'income' && o.dueDate > todayStr && o.dueDate <= visibleRange.endStr)
+    // Incluímos TUDO que for pendente/previsto no período, pois se está pendente, não está no 'balance' ainda
+    const periodIncome = occurrences
+      .filter(o => o.type === 'income' && o.dueDate >= visibleRange.startStr && o.dueDate <= visibleRange.endStr && (o.status === 'pending' || o.status === 'predicted'))
       .reduce((acc, o) => acc + o.amount, 0);
       
-    const futureExpenses = occurrences
-      .filter(o => o.type === 'expense' && o.dueDate > todayStr && o.dueDate <= visibleRange.endStr)
+    const periodExpenses = occurrences
+      .filter(o => o.type === 'expense' && o.dueDate >= visibleRange.startStr && o.dueDate <= visibleRange.endStr && (o.status === 'pending' || o.status === 'predicted' || o.status === 'overdue'))
       .reduce((acc, o) => acc + o.amount, 0);
 
-    return balance + futureIncome - futureExpenses;
-  }, [balance, occurrences, visibleRange, todayStr, selectedMonth, viewMode]);
+    return balance + periodIncome - periodExpenses;
+  }, [balance, occurrences, visibleRange]);
 
   const monthlyEconomy = useMemo(() => {
-    // Evolução em relação ao saldo inicial configurado pelo usuário
-    return projectedBalance - (user?.initialBalance || 0);
-  }, [projectedBalance, user?.initialBalance]);
+    // Diferença entre o saldo atual (real) e o projetado (fim do mês)
+    return projectedBalance - balance;
+  }, [projectedBalance, balance]);
 
   const openModal = useCallback((mode: ModalMode = "generic") => {
     setModalMode(mode);
