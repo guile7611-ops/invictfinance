@@ -780,6 +780,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     
     try {
+      // Lógica: se a data inicial escolhida já passou, avançar para o próximo mês
+      let nextDate = parseISO(r.nextDueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (isBefore(nextDate, today)) {
+        nextDate = addMonths(nextDate, 1);
+      }
+      const finalNextDueDate = nextDate.toISOString().split('T')[0];
+
       const recurrenceId = typeof crypto.randomUUID === 'function' 
         ? crypto.randomUUID() 
         : Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -794,8 +804,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           category: r.category,
           type: r.type,
           frequency: r.frequency,
-          day_of_month: r.dayOfMonth,
-          next_due_date: r.nextDueDate,
+          day_of_month: r.dayOfMonth || nextDate.getUTCDate(),
+          next_due_date: finalNextDueDate,
           status: r.status
         });
 
@@ -810,7 +820,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           category: r.category,
           amount: r.type === 'expense' ? -Math.abs(r.amount) : Math.abs(r.amount),
           description: r.title,
-          date: r.nextDueDate,
+          date: finalNextDueDate,
           status: 'predicted'
         });
 
@@ -820,6 +830,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       console.error("Erro addRecurrence:", err);
       throw new Error("Falha ao salvar conta recorrente: " + (err.message || "Erro desconhecido"));
+    }
+  };
+
+  const resetAllData = async () => {
+    if (!user) return;
+    const confirm = window.confirm("ATENÇÃO: Isso apagará TODOS os seus dados (transações, cartões, metas, etc) permanentemente. Deseja continuar?");
+    if (!confirm) return;
+
+    try {
+      const tables = ['transactions', 'recurrences', 'goals', 'credit_cards', 'installments', 'friend_debts'];
+      for (const table of tables) {
+        await supabase.from(table).delete().eq('user_id', user.id);
+      }
+      
+      await fetchData();
+      window.alert("Todos os dados foram resetados com sucesso.");
+    } catch (error) {
+      console.error("Erro ao resetar dados:", error);
+      window.alert("Erro ao resetar dados.");
     }
   };
 
@@ -1034,6 +1063,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isLoaded,
         selectedMonth,
         setSelectedMonth,
+        resetAllData,
       }}
     >
       {children}

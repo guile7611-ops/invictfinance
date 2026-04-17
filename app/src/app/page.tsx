@@ -30,6 +30,7 @@ import FriendsView from "@/components/FriendsView";
 import CardModal from "@/components/CardModal";
 import InstallmentModal from "@/components/InstallmentModal";
 import MobileNav from "@/components/MobileNav";
+import SettingsView from "@/components/SettingsView";
 
 
 function DashboardContent() {
@@ -88,6 +89,8 @@ function DashboardContent() {
         return <CardsView />;
       case "friends":
         return <FriendsView />;
+      case "settings":
+        return <SettingsView />;
       default:
         return (
           <div className="card" style={{ padding: 40, textAlign: "center", color: "var(--gray-400)" }}>

@@ -74,9 +74,9 @@ export default function Sidebar({ activeSection, onNavigate }: Props) {
       {generalItems.map((item) => (
         <button
           key={item.id}
-          className="sidebar-item"
+          className={`sidebar-item ${activeSection === item.id ? "active" : ""}`}
           style={{ background: "none", border: "none", width: "100%", textAlign: "left" }}
-          onClick={() => {}}
+          onClick={() => onNavigate(item.id)}
         >
           {item.icon}
           {item.label}
