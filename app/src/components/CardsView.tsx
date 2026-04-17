@@ -70,7 +70,7 @@ export default function CardsView() {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "350px 1fr", gap: 24 }}>
+      <div className="dashboard-grid">
         {/* Lado Esquerdo: Lista de Cartões Visuais */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {cards.length === 0 && (
@@ -160,7 +160,7 @@ export default function CardsView() {
                 </span>
               </div>
               
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, marginTop: 10 }}>
+              <div className="dashboard-grid" style={{ marginTop: 10 }}>
                 <div>
                   <div style={{ fontSize: 12, color: "var(--gray-400)", marginBottom: 4 }}>Total a pagar ({selectedCard?.name})</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: "var(--gray-900)" }}>
@@ -205,7 +205,7 @@ export default function CardsView() {
                 <ShoppingBag size={18} style={{ color: "var(--gray-400)" }} />
               </div>
               
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 32, alignItems: "center", padding: "10px 0" }}>
+              <div className="dashboard-grid" style={{ alignItems: "center", padding: "10px 0" }}>
                 <div style={{ height: 200, position: "relative" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>

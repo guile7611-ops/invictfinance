@@ -20,7 +20,7 @@ export default function DashboardFilters() {
   };
 
   return (
-    <div className="fade-up" style={{ 
+    <div className="fade-up dashboard-filters" style={{ 
       display: "flex", 
       alignItems: "center", 
       justifyContent: "space-between",
@@ -30,10 +30,12 @@ export default function DashboardFilters() {
       borderRadius: "16px",
       border: "1px solid rgba(255, 255, 255, 0.5)",
       boxShadow: "var(--shadow-card)",
-      marginBottom: 24
+      marginBottom: 24,
+      flexWrap: "wrap",
+      gap: 16
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ 
+        <div className="hide-mobile" style={{ 
           background: "var(--sidebar-bg)", 
           color: "white", 
           padding: 8, 
@@ -50,8 +52,8 @@ export default function DashboardFilters() {
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ display: "flex", background: "rgba(0,0,0,0.05)", padding: "4px", borderRadius: "12px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", width: "100%", justifyContent: "space-between" }}>
+        <div className="hide-mobile" style={{ display: "flex", background: "rgba(0,0,0,0.05)", padding: "4px", borderRadius: "12px" }}>
           {[
             { id: 'grid', label: 'Dashboard' },
             { id: 'timeline', label: 'Timeline' }
@@ -77,7 +79,7 @@ export default function DashboardFilters() {
           ))}
         </div>
 
-        <div style={{ height: 24, width: 1, background: "var(--gray-200)" }} />
+        <div className="hide-mobile" style={{ height: 24, width: 1, background: "var(--gray-200)" }} />
 
         <div style={{ display: "flex", background: "rgba(0,0,0,0.05)", padding: "4px", borderRadius: "12px" }}>
           {['Mês', 'Trimestre', 'Ano'].map((p) => (
@@ -102,7 +104,7 @@ export default function DashboardFilters() {
           ))}
         </div>
 
-        <div style={{ height: 24, width: 1, background: "var(--gray-200)" }} />
+        <div className="hide-mobile" style={{ height: 24, width: 1, background: "var(--gray-200)" }} />
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button 

@@ -20,17 +20,18 @@ export default function Topbar() {
   return (
     <header className="topbar fade-up fade-up-1">
       <div className="topbar-title">
-        <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-          <h1>Dashboard</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <h1 style={{ fontSize: "clamp(20px, 5vw, 26px)" }}>Dashboard</h1>
           <span style={{ 
-            fontSize: 14, 
+            fontSize: 12, 
             fontWeight: 700, 
             color: "var(--primary)", 
             background: "var(--primary-shadow)", 
             padding: "2px 10px", 
             borderRadius: 20,
             textTransform: "uppercase",
-            letterSpacing: "0.5px"
+            letterSpacing: "0.5px",
+            whiteSpace: "nowrap"
           }}>
             {capitalizedMonth}
           </span>

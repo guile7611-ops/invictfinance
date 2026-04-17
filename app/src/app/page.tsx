@@ -49,11 +49,11 @@ function DashboardContent() {
             {displayMode === 'grid' ? (
               <>
                 <KpiCards />
-                <div style={{ display: "grid", gridTemplateColumns: "1.8fr 1.2fr", gap: 24, marginBottom: 24 }}>
+                <div className="dashboard-grid" style={{ marginBottom: 24 }}>
                   <CashflowChart />
                   <GlobalCategoryChart />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1.8fr 1.2fr", gap: 24 }}>
+                <div className="dashboard-grid">
                   <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                     <TransactionsTable mode="all" fixedStatus="completed" />
                     <SavingsPanel />

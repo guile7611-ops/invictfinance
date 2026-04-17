@@ -241,7 +241,9 @@ export default function CashflowChart({ fullWidth = false }: { fullWidth?: boole
         padding: "16px",
         background: "linear-gradient(to right, #f8fafc, #ffffff)",
         borderRadius: 16,
-        border: "1px solid #f1f5f9"
+        border: "1px solid #f1f5f9",
+        flexWrap: "wrap",
+        gap: 20
       }}>
         <div style={{ display: "flex", gap: 32 }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
