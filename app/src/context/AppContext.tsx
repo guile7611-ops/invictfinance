@@ -781,14 +781,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     
     try {
-      // Lógica: se a data inicial escolhida já passou, avançar para o próximo mês
-      let nextDate = parseISO(r.nextDueDate);
+      // Calcular a data correta baseada no dia do mês escolhido
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (isBefore(nextDate, today)) {
-        nextDate = addMonths(nextDate, 1);
+      let nextDate = new Date(today.getFullYear(), today.getMonth(), r.dayOfMonth || today.getDate());
+      
+      // Se o dia escolhido já passou no mês atual, joga para o próximo mês
+      if (isBefore(nextDate, startOfMonth(addDays(today, 0))) || nextDate < today) {
+        if (nextDate.getDate() !== today.getDate()) { // Se não for hoje
+           nextDate = addMonths(nextDate, 1);
+        }
       }
+      
       const finalNextDueDate = nextDate.toISOString().split('T')[0];
 
       const recurrenceId = typeof crypto.randomUUID === 'function' 
@@ -804,10 +807,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           amount: parseFloat(r.amount),
           category: r.category,
           type: r.type,
-          frequency: r.frequency,
-          day_of_month: r.dayOfMonth || nextDate.getUTCDate(),
+          frequency: r.frequency || 'monthly',
+          day_of_month: r.dayOfMonth,
           next_due_date: finalNextDueDate,
-          status: r.status
+          status: r.status || 'active'
         });
 
       if (recError) throw recError;
@@ -970,11 +973,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (updates.status !== undefined) dbUpdates.status = updates.status;
     
     // Mapear variações de nomes de colunas para datas
-    if (updates.dayOfMonth !== undefined) dbUpdates.day_of_month = updates.dayOfMonth;
-    if (updates.day_of_month !== undefined) dbUpdates.day_of_month = updates.day_of_month;
-    
-    if (updates.nextDueDate !== undefined) dbUpdates.next_due_date = updates.nextDueDate;
-    if (updates.next_due_date !== undefined) dbUpdates.next_due_date = updates.next_due_date;
+    const day = updates.dayOfMonth || updates.day_of_month;
+    if (day !== undefined) {
+      dbUpdates.day_of_month = day;
+      
+      // Recalcular next_due_date baseado no novo dia escolhido
+      const today = new Date();
+      let nextDate = new Date(today.getFullYear(), today.getMonth(), day);
+      
+      // Se o dia escolhido já passou no mês atual, joga para o próximo mês
+      if (nextDate < today && nextDate.getDate() !== today.getDate()) {
+        nextDate = addMonths(nextDate, 1);
+      }
+      dbUpdates.next_due_date = nextDate.toISOString().split('T')[0];
+    } else if (updates.nextDueDate || updates.next_due_date) {
+      dbUpdates.next_due_date = updates.nextDueDate || updates.next_due_date;
+    }
 
     const { error } = await supabase
       .from('recurrences')
