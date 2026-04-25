@@ -66,6 +66,8 @@ type AppContextValue = {
   
   cards: Card[];
   addCard: (c: any) => Promise<void>;
+  updateCard: (id: string, updates: any) => Promise<void>;
+  removeCard: (id: string) => Promise<void>;
   
   installments: any[];
   addInstallment: (i: any) => Promise<void>;
@@ -112,8 +114,9 @@ type AppContextValue = {
   closeRecurrenceModal: () => void;
   openGoalModal: () => void;
   closeGoalModal: () => void;
+  editingCard: Card | null;
   isCardModalOpen: boolean;
-  openCardModal: () => void;
+  openCardModal: (card?: Card) => void;
   closeCardModal: () => void;
   
   isInstallmentModalOpen: boolean;
@@ -150,6 +153,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [recurrences, setRecurrences] = useState<Recurrence[]>([]);
   const [friendDebts, setFriendDebts] = useState<FriendDebt[]>([]);
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [isInstallmentModalOpen, setIsInstallmentModalOpen] = useState(false);
   const [quickConfirmTarget, setQuickConfirmTarget] = useState<QuickConfirmTarget>(null);
 
@@ -522,6 +526,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
       throw error;
     }
     await fetchData();
+  };
+
+  const updateCard = async (id: string, updates: any) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('credit_cards')
+      .update({
+        name: updates.name,
+        bank: updates.bank,
+        limit_amount: updates.limit,
+        current_balance: updates.balance,
+        last_four: updates.lastFourDigits,
+        closing_day: updates.closingDay,
+        due_day: updates.dueDay,
+        color: updates.color,
+        type: updates.type
+      })
+      .eq('id', id);
+    
+    if (error) {
+      console.error("Erro Supabase ao atualizar cartão:", error);
+      window.alert(`Não foi possível atualizar o cartão no banco: ${error.message}`);
+      throw error;
+    }
+    await fetchData();
+  };
+
+  const removeCard = async (id: string) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('credit_cards')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    fetchData();
   };
 
   const currentMonth = useMemo(() => new Date().toISOString().slice(0, 7), []);
@@ -954,8 +994,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setEditingRecurrence(null);
   };
 
-  const openCardModal = () => setIsCardModalOpen(true);
-  const closeCardModal = () => setIsCardModalOpen(false);
+  const openCardModal = (card?: Card) => {
+    setEditingCard(card || null);
+    setIsCardModalOpen(true);
+  };
+  const closeCardModal = () => {
+    setIsCardModalOpen(false);
+    setEditingCard(null);
+  };
 
   const openInstallmentModal = () => setIsInstallmentModalOpen(true);
   const closeInstallmentModal = () => setIsInstallmentModalOpen(false);
@@ -972,6 +1018,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         removeGoal,
         cards,
         addCard,
+        updateCard,
+        removeCard,
         installments,
         addInstallment,
         removeInstallment,
@@ -1025,6 +1073,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         closeRecurrenceModal,
         openGoalModal,
         closeGoalModal,
+        editingCard,
         isCardModalOpen,
         openCardModal,
         closeCardModal,

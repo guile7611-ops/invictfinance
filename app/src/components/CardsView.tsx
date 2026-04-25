@@ -6,7 +6,9 @@ import {
   CreditCard, 
   Calendar, 
   Plus,
-  ShoppingBag
+  ShoppingBag,
+  Edit2,
+  Trash2
 } from "lucide-react";
 import CardModal from "./CardModal";
 import InstallmentModal from "./InstallmentModal";
@@ -25,7 +27,8 @@ export default function CardsView() {
     installments, 
     openCardModal, 
     openInstallmentModal,
-    payCardBill
+    payCardBill,
+    removeCard
   } = useApp();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
@@ -63,7 +66,7 @@ export default function CardsView() {
             <ShoppingBag size={16} />
             Nova Compra
           </button>
-          <button className="btn-primary" onClick={openCardModal}>
+          <button className="btn-primary" onClick={() => openCardModal()}>
             <Plus size={16} />
             Novo Cartão
           </button>
@@ -117,10 +120,65 @@ export default function CardsView() {
                   <div style={{ fontSize: 14, opacity: 0.9, fontWeight: 500 }}>{card.name}</div>
                   <div style={{ fontSize: 18, fontWeight: 700, marginTop: 8, letterSpacing: 2 }}>•••• •••• •••• {card.lastFourDigits || "0000"}</div>
                 </div>
-                <div style={{ fontSize: 24, opacity: 0.9 }}>
-                  {card.brand === "visa" && "Visa"}
-                  {card.brand === "mastercard" && "MasterCard"}
-                  {card.brand === "elo" && "Elo"}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 12 }}>
+                  <div style={{ fontSize: 24, opacity: 0.9 }}>
+                    {card.brand === "visa" && "Visa"}
+                    {card.brand === "mastercard" && "MasterCard"}
+                    {card.brand === "elo" && "Elo"}
+                  </div>
+                  {activeCardId === card.id && (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); openCardModal(card); }}
+                        style={{ 
+                          background: "rgba(255,255,255,0.2)", 
+                          border: "none", 
+                          borderRadius: "50%", 
+                          width: 32, 
+                          height: 32, 
+                          display: "flex", 
+                          alignItems: "center", 
+                          justifyContent: "center",
+                          color: "white",
+                          cursor: "pointer",
+                          backdropFilter: "blur(4px)",
+                          transition: "background 0.2s"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.3)"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.2)"}
+                        title="Editar Cartão"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (window.confirm("Tem certeza que deseja excluir este cartão e todos os seus parcelamentos?")) {
+                            removeCard(card.id);
+                          }
+                        }}
+                        style={{ 
+                          background: "rgba(255,255,255,0.2)", 
+                          border: "none", 
+                          borderRadius: "50%", 
+                          width: 32, 
+                          height: 32, 
+                          display: "flex", 
+                          alignItems: "center", 
+                          justifyContent: "center",
+                          color: "white",
+                          cursor: "pointer",
+                          backdropFilter: "blur(4px)",
+                          transition: "background 0.2s"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "rgba(239,68,68,0.8)"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.2)"}
+                        title="Excluir Cartão"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 

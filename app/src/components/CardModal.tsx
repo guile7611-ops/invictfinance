@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, CreditCard, Wallet, Palette } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 const COLORS = [
-  "#10b981", "#3b82f6", "#ef4444", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4"
+  "#10b981", "#3b82f6", "#ef4444", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4",
+  "#64748b", "#6366f1", "#f43f5e", "#14b8a6", "#84cc16", "#f97316", "#18181b"
 ];
 
 export default function CardModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-  const { addCard } = useApp();
+  const { addCard, updateCard, editingCard } = useApp();
   const [name, setName] = useState("");
   const [bank, setBank] = useState("");
   const [limit, setLimit] = useState("");
-  const [balance, setBalance] = useState("0");
   const [isSaving, setIsSaving] = useState(false);
   const [lastFour, setLastFour] = useState("");
   const [color, setColor] = useState(COLORS[0]);
@@ -21,30 +21,53 @@ export default function CardModal({ isOpen, onClose }: { isOpen: boolean, onClos
   const [closingDay, setClosingDay] = useState("10");
   const [dueDay, setDueDay] = useState("20");
 
+
+  useEffect(() => {
+    if (editingCard) {
+      setName(editingCard.name || "");
+      setBank(editingCard.bank || "");
+      setLimit(editingCard.limit?.toString() || "");
+      setLastFour(editingCard.lastFourDigits || "");
+      setColor(editingCard.color || COLORS[0]);
+      setType((editingCard.type as "credit" | "debit") || "credit");
+      setClosingDay(editingCard.closingDay?.toString() || "10");
+      setDueDay(editingCard.dueDay?.toString() || "20");
+    } else {
+      setName("");
+      setBank("");
+      setLimit("");
+      setLastFour("");
+      setColor(COLORS[0]);
+      setType("credit");
+      setClosingDay("10");
+      setDueDay("20");
+    }
+  }, [editingCard, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await addCard({
+      const cardData = {
         name,
         bank,
         limit: parseFloat(limit),
-        balance: parseFloat(balance),
         lastFourDigits: lastFour,
         color,
         type,
         closingDay: parseInt(closingDay),
         dueDay: parseInt(dueDay)
-      });
+      };
+
+      if (editingCard) {
+        await updateCard(editingCard.id, cardData);
+      } else {
+        await addCard(cardData);
+      }
       onClose();
-      // Reset
-      setName("");
-      setBank("");
-      setLimit("");
-      setBalance("0");
-      setLastFour("");
+      // Reset is handled by useEffect when modal closes or editingCard changes
     } catch (error) {
       console.error("Erro detalhado ao salvar cartão:", error);
       alert("Erro ao salvar cartão. Verifique o console.");
@@ -61,7 +84,7 @@ export default function CardModal({ isOpen, onClose }: { isOpen: boolean, onClos
             <div className="icon-container" style={{ background: "var(--green-50)", color: "var(--green-600)" }}>
               <CreditCard size={20} />
             </div>
-            <h2 className="modal-title">Novo Cartão</h2>
+            <h2 className="modal-title">{editingCard ? "Editar Cartão" : "Novo Cartão"}</h2>
           </div>
           <button className="modal-close" onClick={onClose}>
             <X size={20} />
@@ -102,37 +125,20 @@ export default function CardModal({ isOpen, onClose }: { isOpen: boolean, onClos
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <div className="form-group">
-              <label className="form-label">Limite Total</label>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "var(--gray-400)" }}>R$</span>
-                <input 
-                  type="number" 
-                  className="form-input" 
-                  style={{ paddingLeft: 35 }} 
-                  placeholder="0,00" 
-                  step="0.01" 
-                  required 
-                  value={limit}
-                  onChange={e => setLimit(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Saldo Atual (Utilizado)</label>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "var(--gray-400)" }}>R$</span>
-                <input 
-                  type="number" 
-                  className="form-input" 
-                  style={{ paddingLeft: 35 }} 
-                  placeholder="0,00" 
-                  step="0.01" 
-                  value={balance}
-                  onChange={e => setBalance(e.target.value)}
-                />
-              </div>
+          <div className="form-group">
+            <label className="form-label">Limite Total</label>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "var(--gray-400)" }}>R$</span>
+              <input 
+                type="number" 
+                className="form-input" 
+                style={{ paddingLeft: 35 }} 
+                placeholder="0,00" 
+                step="0.01" 
+                required 
+                value={limit}
+                onChange={e => setLimit(e.target.value)}
+              />
             </div>
           </div>
 
@@ -161,7 +167,7 @@ export default function CardModal({ isOpen, onClose }: { isOpen: boolean, onClos
 
           <div className="form-group">
             <label className="form-label">Cor do Cartão</label>
-            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
               {COLORS.map(c => (
                 <button
                   key={c}
