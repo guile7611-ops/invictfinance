@@ -45,6 +45,7 @@ export default function FriendsView() {
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDebtModal, setShowDebtModal] = useState(false);
+  const [showRequestsModal, setShowRequestsModal] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [debtType, setDebtType] = useState<"loan" | "debt">("loan");
   const [amount, setAmount] = useState("");
@@ -195,52 +196,49 @@ export default function FriendsView() {
         {/* Left: Friends & Requests List */}
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           
-          {/* Incoming Requests Section */}
-          {incomingRequests.length > 0 && (
-            <div className="card" style={{ padding: 20, border: "2px solid var(--green-200)", background: "var(--green-50)" }}>
-              <h4 style={{ fontSize: 14, fontWeight: 800, color: "var(--green-800)", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                <Users size={18} /> Solicitações Pendentes ({incomingRequests.length})
-              </h4>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {incomingRequests.map((req: any) => (
-                  <div key={req.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "white", padding: 12, borderRadius: 12, border: "1px solid var(--green-100)" }}>
-                    <img src={req.avatar} style={{ width: 32, height: 32, borderRadius: "50%" }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>{req.name}</div>
-                      <div style={{ fontSize: 11, color: "var(--gray-400)" }}>{req.username}</div>
-                    </div>
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button 
-                        onClick={() => handleAccept(req.id)}
-                        style={{ padding: 6, borderRadius: 8, border: "none", background: "var(--green-500)", color: "white", cursor: "pointer" }}
-                      >
-                        <Check size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDecline(req.id)}
-                        style={{ padding: 6, borderRadius: 8, border: "none", background: "#fee2e2", color: "var(--expense)", cursor: "pointer" }}
-                      >
-                        <Ban size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Main Friends List */}
           <div className="card" style={{ padding: 0, display: "flex", flexDirection: "column" }}>
             <div style={{ padding: 24 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 800 }}>Meus Amigos</h3>
-                <button 
-                  className="btn-primary" 
-                  style={{ padding: "6px 12px", fontSize: 12 }}
-                  onClick={() => setShowAddModal(true)}
-                >
-                  <UserPlus size={14} /> Novo
-                </button>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button 
+                    onClick={() => setShowRequestsModal(true)}
+                    style={{ 
+                      padding: "6px 12px", 
+                      fontSize: 12, 
+                      borderRadius: 10, 
+                      border: "1px solid var(--gray-200)", 
+                      background: "white", 
+                      color: "var(--gray-900)", 
+                      fontWeight: 700,
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: 6,
+                      position: "relative",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <Users size={14} /> Solicitações
+                    {incomingRequests.length > 0 && (
+                      <div style={{
+                        position: "absolute", top: -6, right: -6, background: "var(--expense)", color: "white", 
+                        fontSize: 10, fontWeight: 800, width: 18, height: 18, borderRadius: 9, 
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        border: "2px solid white"
+                      }}>
+                        {incomingRequests.length}
+                      </div>
+                    )}
+                  </button>
+                  <button 
+                    className="btn-primary" 
+                    style={{ padding: "6px 12px", fontSize: 12 }}
+                    onClick={() => setShowAddModal(true)}
+                  >
+                    <UserPlus size={14} /> Novo
+                  </button>
+                </div>
               </div>
               <div className="search-wrap">
                 <Search size={14} className="search-icon" />
@@ -552,6 +550,67 @@ export default function FriendsView() {
                 {loading ? "Registrando..." : "Confirmar Registro"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Requests Modal */}
+      {showRequestsModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20
+        }}>
+          <div style={{
+            background: "white", borderRadius: 24, padding: 32, width: "100%", maxWidth: 440,
+            boxShadow: "0 24px 48px rgba(0,0,0,0.1)", position: "relative"
+          }}>
+            <button 
+              onClick={() => setShowRequestsModal(false)}
+              style={{ position: "absolute", top: 24, right: 24, background: "none", border: "none", color: "var(--gray-400)", cursor: "pointer" }}
+            >
+              <X size={24} />
+            </button>
+
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 24, color: "var(--gray-900)" }}>
+              Solicitações de Amizade
+            </h3>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {incomingRequests.length === 0 ? (
+                <div style={{ padding: 30, textAlign: "center", color: "var(--gray-400)", fontSize: 14 }}>
+                  Você não tem nenhuma solicitação no momento.
+                </div>
+              ) : (
+                incomingRequests.map((req: any) => (
+                  <div key={req.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--gray-50)", padding: 16, borderRadius: 16, border: "1px solid var(--gray-100)" }}>
+                    <img src={req.avatar} style={{ width: 40, height: 40, borderRadius: "50%" }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>{req.name}</div>
+                      <div style={{ fontSize: 12, color: "var(--gray-400)" }}>{req.username}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button 
+                        onClick={async () => {
+                          await handleAccept(req.id);
+                        }}
+                        style={{ padding: 8, borderRadius: 10, border: "none", background: "var(--green-500)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                        <Check size={18} />
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          await handleDecline(req.id);
+                        }}
+                        style={{ padding: 8, borderRadius: 10, border: "none", background: "#fee2e2", color: "var(--expense)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                        <Ban size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

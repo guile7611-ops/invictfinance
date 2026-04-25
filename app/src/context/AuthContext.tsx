@@ -249,8 +249,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       u.email.toLowerCase() === cleanSearchName
     );
     
-    if (!friend) throw new Error(`Usuário "@${cleanSearchName}" não encontrado. Verifique se o username está correto.`);
-    if (friend.id === user.id) throw new Error("Você não pode adicionar a si mesmo");
+    if (!friend) throw new Error(`Usuário "${cleanSearchName}" não encontrado. Verifique se o nome está correto.`);
+    if (friend.id === user.id) throw new Error("Você não pode adicionar a si mesmo.");
+    if (user.friendIds?.includes(friend.id)) throw new Error("Vocês já são amigos.");
+    if (user.outgoingRequests?.includes(friend.id)) throw new Error("Você já enviou uma solicitação para este usuário.");
+    if (user.friendRequests?.includes(friend.id)) throw new Error("Este usuário já enviou uma solicitação para você. Verifique suas solicitações pendentes.");
 
     const { error } = await supabase
       .from('friend_requests')
