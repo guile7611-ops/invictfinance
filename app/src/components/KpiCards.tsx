@@ -259,7 +259,7 @@ export default function KpiCards() {
       value: monthlyEconomy,
       prefix: "R$ ",
       decimals: 2,
-      change: `${monthlyEconomy > 0 ? '+' : ''}${((monthlyEconomy / (Math.abs(monthlyIncome + predictedIncome) || 1)) * 100).toFixed(1)}%`,
+      change: `${monthlyEconomy > 0 ? '+' : ''}${((monthlyEconomy / (Math.abs(totalBalance) || 1)) * 100).toFixed(1)}%`,
       changeType: (monthlyEconomy >= 0 ? "positive" : "negative") as "positive" | "negative",
       icon: monthlyEconomy >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />,
       iconBg: monthlyEconomy >= 0 ? "#f0fdf4" : "#fef2f2",

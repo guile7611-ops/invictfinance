@@ -852,9 +852,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [balance, occurrences, visibleRange]);
 
   const monthlyEconomy = useMemo(() => {
-    // Evolução (Resultado Líquido) do período
-    return (monthlyIncome + predictedIncome) - (monthlyExpenses + predictedExpenses);
-  }, [monthlyIncome, predictedIncome, monthlyExpenses, predictedExpenses]);
+    // Evolução (Resultado Líquido) do período: Saldo Projetado - Saldo Atual
+    return projectedBalance - balance;
+  }, [projectedBalance, balance]);
 
   const openModal = useCallback((mode: ModalMode = "generic") => {
     setModalMode(mode);
