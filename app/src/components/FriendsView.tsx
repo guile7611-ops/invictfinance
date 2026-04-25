@@ -265,6 +265,10 @@ export default function FriendsView() {
                     key={friend.id} 
                     onClick={() => {
                       setSelectedFriend(friend);
+                      setAmount("");
+                      setDescription("");
+                      setError("");
+                      setDebtType("loan");
                       setShowDebtModal(true);
                     }}
                     style={{ 
@@ -305,7 +309,18 @@ export default function FriendsView() {
               <h3 style={{ fontSize: 18, fontWeight: 800 }}>Empréstimos e Cobranças</h3>
               <p style={{ fontSize: 12, color: "var(--gray-400)", marginTop: 4 }}>Controle detalhado de débitos entre amigos</p>
             </div>
-            <button className="btn-outline" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button 
+              className="btn-outline" 
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+              onClick={() => {
+                setSelectedFriend(null);
+                setAmount("");
+                setDescription("");
+                setError("");
+                setDebtType("loan");
+                setShowDebtModal(true);
+              }}
+            >
               <HandCoins size={16} /> Registrar Acerto
             </button>
           </div>
@@ -368,7 +383,16 @@ export default function FriendsView() {
               })
             )}
 
-            <div style={{ 
+            <div 
+              onClick={() => {
+                setSelectedFriend(null);
+                setAmount("");
+                setDescription("");
+                setError("");
+                setDebtType("loan");
+                setShowDebtModal(true);
+              }}
+              style={{ 
               marginTop: 10,
               padding: 20, 
               border: "2px dashed var(--gray-200)", 
@@ -444,7 +468,7 @@ export default function FriendsView() {
       )}
 
       {/* Debt Modal */}
-      {showDebtModal && selectedFriend && (
+      {showDebtModal && (
         <div style={{
           position: "fixed",
           inset: 0,
@@ -460,12 +484,18 @@ export default function FriendsView() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
               <div>
                 <h3 style={{ fontSize: 20, fontWeight: 800 }}>Novo Registro</h3>
-                <p style={{ fontSize: 13, color: "var(--gray-500)" }}>Registrar transação com {selectedFriend.name}</p>
+                <p style={{ fontSize: 13, color: "var(--gray-500)" }}>Registrar transação com um amigo</p>
               </div>
               <button onClick={() => setShowDebtModal(false)} style={{ background: "none", border: "none", color: "var(--gray-400)", cursor: "pointer" }}>
                 <X size={24} />
               </button>
             </div>
+
+            {error && (
+              <div style={{ background: "#fef2f2", border: "1.5px solid #fca5a5", color: "#dc2626", padding: 12, borderRadius: 12, fontSize: 13, marginBottom: 20, fontWeight: 600 }}>
+                {error}
+              </div>
+            )}
 
             <form onSubmit={handleAddDebt} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "var(--gray-50)", padding: 4, borderRadius: 12 }}>
@@ -503,6 +533,24 @@ export default function FriendsView() {
                 >
                   Eu devo
                 </button>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--gray-500)", marginBottom: 8 }}>AMIGO</label>
+                <select 
+                  value={selectedFriend?.id || ""} 
+                  onChange={(e) => {
+                    const friend = friendsWithBalance.find(f => f.id === e.target.value);
+                    setSelectedFriend(friend || null);
+                  }}
+                  required
+                  style={{ width: "100%", padding: 14, borderRadius: 12, border: "2px solid var(--gray-100)", fontSize: 14, fontFamily: "inherit", backgroundColor: "white" }}
+                >
+                  <option value="" disabled>Selecione um amigo</option>
+                  {friendsWithBalance.map(f => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div>

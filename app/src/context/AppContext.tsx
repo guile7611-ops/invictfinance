@@ -56,7 +56,7 @@ type AppContextValue = {
   
   friendDebts: FriendDebt[];
   addFriendDebt: (d: Omit<FriendDebt, "id" | "created_at" | "creator_id">) => Promise<void>;
-  updateFriendDebtStatus: (id: string, status: 'pending' | 'paid') => Promise<void>;
+  updateFriendDebtStatus: (id: string, status: 'pending' | 'paid', realAmount?: number, realDate?: string) => Promise<void>;
   removeFriendDebt: (id: string) => Promise<void>;
   
   goals: Goal[];
@@ -487,12 +487,72 @@ export function AppProvider({ children }: { children: ReactNode }) {
       creator_id: user.id
     });
     if (error) throw error;
+
+    const isLender = d.lender_id === user.id;
+    
+    // Transação realizada (despesa ao emprestar, receita ao pegar)
+    await supabase.from('transactions').insert({
+      user_id: user.id,
+      type: isLender ? 'expense' : 'income',
+      category: 'Amizades',
+      amount: isLender ? -Math.abs(d.amount) : Math.abs(d.amount),
+      description: isLender ? `Empréstimo concedido: ${d.description}` : `Empréstimo recebido: ${d.description}`,
+      date: new Date().toISOString().split('T')[0],
+      status: 'completed'
+    });
+
+    // Transação prevista (receita ao receber de volta, despesa ao pagar)
+    await supabase.from('transactions').insert({
+      user_id: user.id,
+      type: isLender ? 'income' : 'expense',
+      category: 'Amizades',
+      amount: isLender ? Math.abs(d.amount) : -Math.abs(d.amount),
+      description: isLender ? `Recebimento previsto: ${d.description}` : `Pagamento previsto: ${d.description}`,
+      date: d.due_date,
+      status: 'predicted'
+    });
+
     await fetchData();
   };
 
-  const updateFriendDebtStatus = async (id: string, status: 'pending' | 'paid') => {
+  const updateFriendDebtStatus = async (id: string, status: 'pending' | 'paid', realAmount?: number, realDate?: string) => {
     const { error } = await supabase.from('friend_debts').update({ status }).eq('id', id);
     if (error) throw error;
+
+    if (status === 'paid' && user) {
+      const debt = friendDebts.find(d => d.id === id);
+      if (debt) {
+        const isLender = debt.lender_id === user.id;
+        const finalAmount = realAmount !== undefined ? realAmount : debt.amount;
+        const finalDate = realDate || new Date().toISOString().split('T')[0];
+        
+        const predictedDesc = isLender ? `Recebimento previsto: ${debt.description}` : `Pagamento previsto: ${debt.description}`;
+        const predictedTrans = transactions.find(t => 
+          t.category === 'Amizades' && 
+          t.status === 'predicted' && 
+          t.description === predictedDesc
+        );
+
+        if (predictedTrans) {
+          await supabase.from('transactions').update({
+            status: 'completed',
+            amount: isLender ? Math.abs(finalAmount) : -Math.abs(finalAmount),
+            date: finalDate,
+            description: `Acerto de Amizade: ${debt.description}`
+          }).eq('id', predictedTrans.id);
+        } else {
+          await supabase.from('transactions').insert({
+            user_id: user.id,
+            type: isLender ? 'income' : 'expense',
+            category: 'Amizades',
+            amount: isLender ? Math.abs(finalAmount) : -Math.abs(finalAmount),
+            description: `Acerto de Amizade: ${debt.description}`,
+            date: finalDate,
+            status: 'completed'
+          });
+        }
+      }
+    }
     await fetchData();
   };
 
@@ -866,7 +926,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const confirmOccurrence = async (occurrenceId: string, realAmount?: number, realDate?: string) => {
     if (!user) return;
     
-    if (occurrenceId.startsWith('v-')) {
+    if (occurrenceId.startsWith('debt-')) {
+      const debtId = occurrenceId.split('debt-')[1];
+      await updateFriendDebtStatus(debtId, 'paid', realAmount, realDate);
+    } else if (occurrenceId.startsWith('v-')) {
       const parts = occurrenceId.split('-');
       const recurrenceId = parts[1];
       const rec = recurrences.find(r => r.id === recurrenceId);
