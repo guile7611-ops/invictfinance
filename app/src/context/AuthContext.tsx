@@ -241,9 +241,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("Você precisa estar logado");
     
     const cleanSearchName = friendUsername.replace(/^@/, "").toLowerCase();
-    const friend = storedUsers.find(u => u.username.toLowerCase() === cleanSearchName);
     
-    if (!friend) throw new Error(`Usuário "@${cleanSearchName}" não encontrado`);
+    // Busca por username, email ou full_name
+    const friend = storedUsers.find(u => 
+      u.username.toLowerCase() === cleanSearchName ||
+      u.name.toLowerCase() === cleanSearchName ||
+      u.email.toLowerCase() === cleanSearchName
+    );
+    
+    if (!friend) throw new Error(`Usuário "@${cleanSearchName}" não encontrado. Verifique se o username está correto.`);
     if (friend.id === user.id) throw new Error("Você não pode adicionar a si mesmo");
 
     const { error } = await supabase
