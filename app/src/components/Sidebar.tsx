@@ -45,13 +45,44 @@ type Props = {
 
 export default function Sidebar({ activeSection, onNavigate }: Props) {
   const { user, logout } = useAuth();
+  const { openUpdatesModal } = useApp();
 
   return (
     <nav className="sidebar" aria-label="Menu principal">
       {/* Logo */}
-      <div className="sidebar-logo">
+      <div className="sidebar-logo" style={{ marginBottom: 12 }}>
         <img src="/logo.png" alt="INVICT Logo" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 8 }} />
         <span className="sidebar-logo-text" style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.5px" }}>INVICT FINANCE</span>
+      </div>
+
+      {/* Seção de Atualizações - Somente Desktop */}
+      <div className="desktop-only" style={{ padding: "0 8px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 16 }}>
+        <button 
+          onClick={openUpdatesModal}
+          style={{
+            width: "100%",
+            background: "rgba(34, 197, 94, 0.1)",
+            border: "1px border var(--green-500)",
+            borderRadius: "10px",
+            padding: "8px 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            cursor: "pointer",
+            transition: "all 0.2s"
+          }}
+          className="update-button"
+        >
+          <div style={{ 
+            width: 8, 
+            height: 8, 
+            borderRadius: "50%", 
+            background: "var(--green-400)",
+            boxShadow: "0 0 8px var(--green-400)" 
+          }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--green-300)" }}>Atualizações</span>
+          <span style={{ fontSize: 10, background: "var(--green-500)", color: "white", padding: "1px 6px", borderRadius: 6, marginLeft: "auto" }}>v2.1</span>
+        </button>
       </div>
 
       {/* Menu */}

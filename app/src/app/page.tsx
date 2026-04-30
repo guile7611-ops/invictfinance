@@ -30,6 +30,7 @@ import FriendsView from "@/components/FriendsView";
 import CardModal from "@/components/CardModal";
 import InstallmentModal from "@/components/InstallmentModal";
 import MobileNav from "@/components/MobileNav";
+import UpdatesModal from "@/components/UpdatesModal";
 
 
 function DashboardContent() {
@@ -162,6 +163,7 @@ function LayoutContent() {
         isOpen={isRecurrenceModalOpen} 
         onClose={closeRecurrenceModal} 
       />
+      <UpdatesModal />
       <MobileNav />
     </div>
   );

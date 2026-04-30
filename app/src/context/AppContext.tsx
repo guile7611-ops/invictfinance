@@ -122,7 +122,9 @@ type AppContextValue = {
   isInstallmentModalOpen: boolean;
   openInstallmentModal: () => void;
   closeInstallmentModal: () => void;
-
+  isUpdatesModalOpen: boolean;
+  openUpdatesModal: () => void;
+  closeUpdatesModal: () => void;
   isLoaded: boolean;
   selectedMonth: string;
   setSelectedMonth: (month: string) => void;
@@ -1070,6 +1072,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const openInstallmentModal = () => setIsInstallmentModalOpen(true);
   const closeInstallmentModal = () => setIsInstallmentModalOpen(false);
 
+  const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
+  const openUpdatesModal = () => setIsUpdatesModalOpen(true);
+  const closeUpdatesModal = () => setIsUpdatesModalOpen(false);
+
   return (
     <AppContext.Provider
       value={{
@@ -1144,6 +1150,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isInstallmentModalOpen,
         openInstallmentModal,
         closeInstallmentModal,
+        isUpdatesModalOpen,
+        openUpdatesModal,
+        closeUpdatesModal,
         isLoaded,
         selectedMonth,
         setSelectedMonth,
