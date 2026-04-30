@@ -20,18 +20,7 @@ export default function DashboardFilters() {
   };
 
   return (
-    <div className="fade-up" style={{ 
-      display: "flex", 
-      alignItems: "center", 
-      justifyContent: "space-between",
-      background: "rgba(255, 255, 255, 0.6)",
-      backdropFilter: "blur(10px)",
-      padding: "12px 20px",
-      borderRadius: "16px",
-      border: "1px solid rgba(255, 255, 255, 0.5)",
-      boxShadow: "var(--shadow-card)",
-      marginBottom: 24
-    }}>
+    <div className="fade-up filters-container">
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ 
           background: "var(--sidebar-bg)", 

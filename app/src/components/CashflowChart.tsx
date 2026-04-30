@@ -241,9 +241,11 @@ export default function CashflowChart({ fullWidth = false }: { fullWidth?: boole
         padding: "16px",
         background: "linear-gradient(to right, #f8fafc, #ffffff)",
         borderRadius: 16,
-        border: "1px solid #f1f5f9"
+        border: "1px solid #f1f5f9",
+        flexWrap: "wrap",
+        gap: 16
       }}>
-        <div style={{ display: "flex", gap: 32 }}>
+        <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Receita Realizada (Mês)</span>
             <span style={{ fontSize: 15, fontWeight: 800, color: "#10b981" }}>
