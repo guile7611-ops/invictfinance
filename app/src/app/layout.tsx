@@ -8,14 +8,6 @@ const inter = Inter({
   display: "swap",
 });
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: "#000000",
-};
-
 export const metadata: Metadata = {
   title: "INVICT FINANCE",
   description: "Seu ecossistema financeiro inteligente",
@@ -30,6 +22,13 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
     apple: "/logo.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
