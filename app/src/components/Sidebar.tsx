@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
+import { useApp } from "@/context/AppContext";
 
 type NavItem = {
   label: string;

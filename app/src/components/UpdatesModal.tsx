@@ -78,7 +78,7 @@ export default function UpdatesModal() {
           overflow: "hidden",
           animation: "modalFadeIn 0.3s ease-out"
         }}
-        onClick={e => e.stopPropagation()}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         {/* Header */}
         <div style={{
