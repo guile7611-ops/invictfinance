@@ -144,6 +144,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [cards, setCards] = useState<Card[]>([]);
   const [installments, setInstallments] = useState<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isClosureModalOpen, setIsClosureModalOpen] = useState(false);
+  const [hasShownClosureModal, setHasShownClosureModal] = useState(false);
 
   const [activeSection, setActiveSection] = useState("dashboard");
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
@@ -271,6 +273,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.error("Erro ao carregar dados:", error);
     }
   }, [user]);
+
+  const overduePastTransactions = useMemo(() => {
+    if (!isLoaded) return [];
+    const currentMonthStr = new Date().toISOString().slice(0, 7);
+    return transactions.filter(t => 
+      t.date.slice(0, 7) < currentMonthStr && 
+      (t.status === 'pending' || t.status === 'predicted' || t.status === 'overdue')
+    );
+  }, [transactions, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded && overduePastTransactions.length > 0 && !hasShownClosureModal) {
+      setIsClosureModalOpen(true);
+      setHasShownClosureModal(true);
+    }
+  }, [isLoaded, overduePastTransactions.length, hasShownClosureModal]);
 
   useEffect(() => {
     if (user) fetchData();
@@ -1023,6 +1041,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await fetchData();
   };
 
+  const rescheduleToCurrentMonth = async (transactionId: string) => {
+    if (!user) return;
+    const today = new Date().toISOString().split('T')[0];
+    
+    const { error } = await supabase
+      .from('transactions')
+      .update({ 
+        date: today,
+        status: 'predicted'
+      })
+      .eq('id', transactionId);
+
+    if (error) throw error;
+    await fetchData();
+  };
+
+  const ignoreTransaction = async (transactionId: string) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('transactions')
+      .update({ status: 'cancelled' })
+      .eq('id', transactionId);
+    
+    if (error) throw error;
+    await fetchData();
+  };
+
   const removeRecurrence = async (id: string) => {
     if (!user) return;
     const { error } = await supabase
@@ -1156,6 +1201,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isLoaded,
         selectedMonth,
         setSelectedMonth,
+        overduePastTransactions,
+        isClosureModalOpen,
+        closeClosureModal: () => setIsClosureModalOpen(false),
+        rescheduleToCurrentMonth,
+        ignoreTransaction
       }}
     >
       {children}

@@ -31,6 +31,7 @@ import CardModal from "@/components/CardModal";
 import InstallmentModal from "@/components/InstallmentModal";
 import MobileNav from "@/components/MobileNav";
 import UpdatesModal from "@/components/UpdatesModal";
+import MonthlyClosureModal from "@/components/MonthlyClosureModal";
 
 
 function DashboardContent() {
@@ -164,6 +165,7 @@ function LayoutContent() {
         onClose={closeRecurrenceModal} 
       />
       <UpdatesModal />
+      <MonthlyClosureModal />
       <MobileNav />
     </div>
   );
