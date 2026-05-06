@@ -82,7 +82,7 @@ export default function Sidebar({ activeSection, onNavigate }: Props) {
             boxShadow: "0 0 8px var(--green-400)" 
           }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: "var(--green-300)" }}>Atualizações</span>
-          <span style={{ fontSize: 10, background: "var(--green-500)", color: "white", padding: "1px 6px", borderRadius: 6, marginLeft: "auto" }}>v2.2</span>
+          <span style={{ fontSize: 10, background: "var(--green-500)", color: "white", padding: "1px 6px", borderRadius: 6, marginLeft: "auto" }}>v2.3</span>
         </button>
       </div>
 

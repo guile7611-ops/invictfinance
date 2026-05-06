@@ -34,7 +34,7 @@ type Props = {
 };
 
 export default function TransactionsTable({ mode = "all", fixedStatus }: Props) {
-  const { transactions, occurrences, removeTransaction, openModal, selectedMonth: globalMonth } = useApp();
+  const { transactions, occurrences, removeTransaction, openModal, selectedMonth: globalMonth, openExportModal } = useApp();
 
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas");
@@ -110,7 +110,11 @@ export default function TransactionsTable({ mode = "all", fixedStatus }: Props) 
           <button className="btn-outline" style={{ padding: "7px 12px" }}>
             <Filter size={14} /> filtrar
           </button>
-          <button className="btn-outline" style={{ padding: "7px 12px" }}>
+          <button 
+            className="btn-outline" 
+            style={{ padding: "7px 12px" }}
+            onClick={openExportModal}
+          >
             <Download size={14} /> Exportar
           </button>
           <button

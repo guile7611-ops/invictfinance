@@ -143,6 +143,9 @@ type AppContextValue = {
   isUpdatesModalOpen: boolean;
   openUpdatesModal: () => void;
   closeUpdatesModal: () => void;
+  isExportModalOpen: boolean;
+  openExportModal: () => void;
+  closeExportModal: () => void;
   isLoaded: boolean;
   selectedMonth: string;
   setSelectedMonth: (month: string) => void;
@@ -184,6 +187,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [isInstallmentModalOpen, setIsInstallmentModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [editingInstallment, setEditingInstallment] = useState<any | null>(null);
   const [quickConfirmTarget, setQuickConfirmTarget] = useState<QuickConfirmTarget>(null);
 
@@ -1358,6 +1362,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const openUpdatesModal = () => setIsUpdatesModalOpen(true);
   const closeUpdatesModal = () => setIsUpdatesModalOpen(false);
 
+  const openExportModal = () => setIsExportModalOpen(true);
+  const closeExportModal = () => setIsExportModalOpen(false);
+
   return (
     <AppContext.Provider
       value={{
@@ -1441,6 +1448,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isUpdatesModalOpen,
         openUpdatesModal,
         closeUpdatesModal,
+        isExportModalOpen,
+        openExportModal,
+        closeExportModal,
         isLoaded,
         selectedMonth,
         setSelectedMonth,

@@ -10,6 +10,15 @@ export default function UpdatesModal() {
 
   const updates = [
     {
+      version: "2.3",
+      date: "06 de Maio, 2026",
+      time: "14:40",
+      type: "feature",
+      title: "Exportação de Extratos (PDF/CSV)",
+      description: "Agora você pode exportar suas transações com layout profissional de banco, escolhendo o período desejado.",
+      items: ["Exportação para PDF com layout Invict", "Exportação para CSV (Excel)", "Seleção de período customizado", "Resumo financeiro no extrato"]
+    },
+    {
       version: "2.2",
       date: "06 de Maio, 2026",
       time: "14:30",

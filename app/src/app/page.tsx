@@ -33,6 +33,7 @@ import MobileNav from "@/components/MobileNav";
 import UpdatesModal from "@/components/UpdatesModal";
 import MonthlyClosureModal from "@/components/MonthlyClosureModal";
 import SettingsView from "@/components/SettingsView";
+import ExportModal from "@/components/ExportModal";
 
 
 function DashboardContent() {
@@ -169,6 +170,7 @@ function LayoutContent() {
       />
       <UpdatesModal />
       <MonthlyClosureModal />
+      <ExportModal />
       <MobileNav />
     </div>
   );
