@@ -28,7 +28,8 @@ export default function CardsView() {
     openCardModal, 
     openInstallmentModal,
     payCardBill,
-    removeCard
+    removeCard,
+    removeInstallment
   } = useApp();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
@@ -327,7 +328,28 @@ export default function CardsView() {
           <div className="card">
             <div className="card-header">
               <h3 className="card-title">Compras Parceladas Ativas</h3>
-              <button style={{ background: "none", border: "none", color: "var(--green-600)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Ver todas</button>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <button 
+                  onClick={() => openInstallmentModal()} 
+                  style={{ 
+                    background: "var(--green-50)", 
+                    border: "none", 
+                    color: "var(--green-600)", 
+                    fontSize: 12, 
+                    fontWeight: 600, 
+                    padding: "6px 12px", 
+                    borderRadius: 8, 
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6
+                  }}
+                >
+                  <Plus size={14} />
+                  Nova Compra
+                </button>
+                <button style={{ background: "none", border: "none", color: "var(--green-600)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Ver todas</button>
+              </div>
             </div>
             
             <table style={{ width: "100%", marginTop: 12 }}>
@@ -336,6 +358,7 @@ export default function CardsView() {
                   <th style={{ textAlign: "left", fontSize: 11, color: "var(--gray-400)", fontWeight: 600, paddingBottom: 10 }}>COMPRA</th>
                   <th style={{ textAlign: "left", fontSize: 11, color: "var(--gray-400)", fontWeight: 600, paddingBottom: 10 }}>PARCELA</th>
                   <th style={{ textAlign: "right", fontSize: 11, color: "var(--gray-400)", fontWeight: 600, paddingBottom: 10 }}>VALOR PARCELA</th>
+                  <th style={{ textAlign: "right", fontSize: 11, color: "var(--gray-400)", fontWeight: 600, paddingBottom: 10 }}>AÇÕES</th>
                 </tr>
               </thead>
               <tbody>
@@ -352,6 +375,28 @@ export default function CardsView() {
                       </td>
                       <td style={{ textAlign: "right", fontWeight: 700, color: "var(--gray-900)", fontSize: 14 }}>
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(i.installmentAmount)}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                          <button 
+                            onClick={() => openInstallmentModal(i)}
+                            className="btn-icon" 
+                            style={{ color: "var(--gray-400)", padding: 4 }}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              if (confirm("Deseja realmente excluir esta compra? Isso liberará o limite do cartão.")) {
+                                removeInstallment(i.id);
+                              }
+                            }}
+                            className="btn-icon" 
+                            style={{ color: "#ef4444", padding: 4 }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                 ))}

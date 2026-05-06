@@ -191,14 +191,36 @@ html, body {
 .sidebar {
   width: 240px;
   min-width: 240px;
+  height: 100vh;
   background: var(--sidebar-bg);
   box-shadow: var(--shadow-sidebar);
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
   gap: 4px;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 10;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
 }
 
 .sidebar-logo {

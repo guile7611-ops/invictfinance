@@ -10,6 +10,15 @@ export default function UpdatesModal() {
 
   const updates = [
     {
+      version: "2.2",
+      date: "06 de Maio, 2026",
+      time: "14:30",
+      type: "feature",
+      title: "Gestão de Compras & Reset de Perfil",
+      description: "Melhorias no controle de cartões de crédito e nova área de configurações para reset total de dados.",
+      items: ["Edição de compras parceladas", "Exclusão de parcelamentos", "Reset total de perfil", "Scroll otimizado no menu lateral"]
+    },
+    {
       version: "2.1",
       date: "30 de Abril, 2026",
       time: "14:55",

@@ -137,7 +137,8 @@ type AppContextValue = {
   closeCardModal: () => void;
   
   isInstallmentModalOpen: boolean;
-  openInstallmentModal: () => void;
+  editingInstallment: any | null;
+  openInstallmentModal: (installment?: any) => void;
   closeInstallmentModal: () => void;
   isUpdatesModalOpen: boolean;
   openUpdatesModal: () => void;
@@ -155,6 +156,7 @@ type AppContextValue = {
   closeClosureModal: () => void;
   rescheduleToCurrentMonth: (id: string, type?: string) => Promise<void>;
   ignoreTransaction: (id: string, type?: string) => Promise<void>;
+  resetAppData: () => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -182,6 +184,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [isInstallmentModalOpen, setIsInstallmentModalOpen] = useState(false);
+  const [editingInstallment, setEditingInstallment] = useState<any | null>(null);
   const [quickConfirmTarget, setQuickConfirmTarget] = useState<QuickConfirmTarget>(null);
 
   const fetchData = useCallback(async () => {
@@ -1291,6 +1294,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchData();
   };
 
+  const resetAppData = async () => {
+    if (!user) return;
+    
+    const confirm = window.confirm("ATENÇÃO: Isso irá apagar permanentemente todas as suas transações, metas, cartões e configurações. Esta ação não pode ser desfeita. Deseja continuar?");
+    
+    if (!confirm) return;
+
+    try {
+      // Apagar tudo relacionado ao usuário
+      await Promise.all([
+        supabase.from('transactions').delete().eq('user_id', user.id),
+        supabase.from('goals').delete().eq('user_id', user.id),
+        supabase.from('credit_cards').delete().eq('user_id', user.id),
+        supabase.from('installments').delete().eq('user_id', user.id),
+        supabase.from('recurrences').delete().eq('user_id', user.id),
+        supabase.from('friend_debts').delete().or(`lender_id.eq.${user.id},debtor_id.eq.${user.id}`)
+      ]);
+
+      await fetchData();
+      window.alert("Todas as suas informações foram resetadas com sucesso.");
+      setActiveSection("dashboard");
+    } catch (error) {
+      console.error("Erro ao resetar dados:", error);
+      window.alert("Ocorreu um erro ao resetar seus dados. Por favor, tente novamente.");
+    }
+  };
+
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
 
   const openGoalModal = () => setIsGoalModalOpen(true);
@@ -1315,8 +1345,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setEditingCard(null);
   };
 
-  const openInstallmentModal = () => setIsInstallmentModalOpen(true);
-  const closeInstallmentModal = () => setIsInstallmentModalOpen(false);
+  const openInstallmentModal = (installment?: any) => {
+    setEditingInstallment(installment || null);
+    setIsInstallmentModalOpen(true);
+  };
+  const closeInstallmentModal = () => {
+    setIsInstallmentModalOpen(false);
+    setEditingInstallment(null);
+  };
 
   const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
   const openUpdatesModal = () => setIsUpdatesModalOpen(true);
@@ -1399,6 +1435,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         openCardModal,
         closeCardModal,
         isInstallmentModalOpen,
+        editingInstallment,
         openInstallmentModal,
         closeInstallmentModal,
         isUpdatesModalOpen,
@@ -1411,7 +1448,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isClosureModalOpen,
         closeClosureModal: () => setIsClosureModalOpen(false),
         rescheduleToCurrentMonth,
-        ignoreTransaction
+        ignoreTransaction,
+        resetAppData
       }}
     >
       {children}

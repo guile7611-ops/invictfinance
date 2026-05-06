@@ -5,22 +5,39 @@ import { X, CreditCard, ShoppingBag, Calendar, DollarSign } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export default function InstallmentModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-  const { cards, addInstallment } = useApp();
+  const { cards, addInstallment, editingInstallment, updateInstallment } = useApp();
   const [description, setDescription] = useState("");
   const [totalAmount, setTotalAmount] = useState<number | "">("");
   const [installmentAmount, setInstallmentAmount] = useState<number | "">("");
   const [totalInstallments, setTotalInstallments] = useState<number>(12);
-  const [cardId, setCardId] = useState(cards[0]?.id || "");
+  const [currentInstallment, setCurrentInstallment] = useState<number>(1);
+  const [cardId, setCardId] = useState("");
   const [category, setCategory] = useState("Shopping");
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Selecionar primeiro cartão automaticamente se disponível
+  // Popular campos se estiver editando
   React.useEffect(() => {
-    if (cards.length > 0 && !cardId) {
-      setCardId(cards[0].id);
+    if (editingInstallment) {
+      setDescription(editingInstallment.description);
+      setTotalAmount(editingInstallment.totalAmount);
+      setInstallmentAmount(editingInstallment.installmentAmount);
+      setTotalInstallments(editingInstallment.totalInstallments);
+      setCurrentInstallment(editingInstallment.currentInstallment);
+      setCardId(editingInstallment.cardId);
+      setCategory(editingInstallment.category);
+      setStartDate(editingInstallment.startDate);
+    } else {
+      setDescription("");
+      setTotalAmount("");
+      setInstallmentAmount("");
+      setTotalInstallments(12);
+      setCurrentInstallment(1);
+      setCardId(cards[0]?.id || "");
+      setCategory("Shopping");
+      setStartDate(new Date().toISOString().split('T')[0]);
     }
-  }, [cards, cardId]);
+  }, [editingInstallment, cards, isOpen]);
 
   if (!isOpen) return null;
 
@@ -57,17 +74,30 @@ export default function InstallmentModal({ isOpen, onClose }: { isOpen: boolean,
     }
     setIsSaving(true);
     try {
-      await addInstallment({
-        description,
-        totalAmount: Number(totalAmount),
-        installmentAmount: Number(installmentAmount),
-        totalInstallments: totalInstallments,
-        currentInstallment: 1,
-        cardId,
-        category,
-        startDate,
-        status: 'active'
-      });
+      if (editingInstallment) {
+        await updateInstallment(editingInstallment.id, {
+          description,
+          totalAmount: Number(totalAmount),
+          installmentAmount: Number(installmentAmount),
+          totalInstallments,
+          currentInstallment,
+          cardId,
+          category,
+          startDate
+        });
+      } else {
+        await addInstallment({
+          description,
+          totalAmount: Number(totalAmount),
+          installmentAmount: Number(installmentAmount),
+          totalInstallments,
+          currentInstallment: 1,
+          cardId,
+          category,
+          startDate,
+          status: 'active'
+        });
+      }
       onClose();
       setDescription("");
       setTotalAmount("");
@@ -88,7 +118,7 @@ export default function InstallmentModal({ isOpen, onClose }: { isOpen: boolean,
             <div className="icon-container" style={{ background: "var(--green-50)", color: "var(--green-600)" }}>
               <ShoppingBag size={20} />
             </div>
-            <h2 className="modal-title">Nova Compra</h2>
+            <h2 className="modal-title">{editingInstallment ? "Editar Compra" : "Nova Compra"}</h2>
           </div>
           <button className="modal-close" onClick={onClose}>
             <X size={20} />
@@ -207,7 +237,7 @@ export default function InstallmentModal({ isOpen, onClose }: { isOpen: boolean,
               style={{ flex: 1, justifyContent: "center" }}
               disabled={isSaving}
             >
-              {isSaving ? "Salvando..." : "Salvar Compra"}
+              {isSaving ? "Salvando..." : editingInstallment ? "Salvar Alterações" : "Salvar Compra"}
             </button>
           </div>
         </form>

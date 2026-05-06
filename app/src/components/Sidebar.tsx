@@ -82,7 +82,7 @@ export default function Sidebar({ activeSection, onNavigate }: Props) {
             boxShadow: "0 0 8px var(--green-400)" 
           }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: "var(--green-300)" }}>Atualizações</span>
-          <span style={{ fontSize: 10, background: "var(--green-500)", color: "white", padding: "1px 6px", borderRadius: 6, marginLeft: "auto" }}>v2.1</span>
+          <span style={{ fontSize: 10, background: "var(--green-500)", color: "white", padding: "1px 6px", borderRadius: 6, marginLeft: "auto" }}>v2.2</span>
         </button>
       </div>
 
@@ -106,9 +106,9 @@ export default function Sidebar({ activeSection, onNavigate }: Props) {
       {generalItems.map((item) => (
         <button
           key={item.id}
-          className="sidebar-item"
+          className={`sidebar-item ${activeSection === item.id ? "active" : ""}`}
           style={{ background: "none", border: "none", width: "100%", textAlign: "left" }}
-          onClick={() => {}}
+          onClick={() => onNavigate(item.id)}
         >
           {item.icon}
           {item.label}
