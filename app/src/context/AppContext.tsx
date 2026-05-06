@@ -165,7 +165,7 @@ type AppContextValue = {
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, updateInitialBalance } = useAuth();
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -1301,27 +1301,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const resetAppData = async () => {
     if (!user) return;
     
-    const confirm = window.confirm("ATENÇÃO: Isso irá apagar permanentemente todas as suas transações, metas, cartões e configurações. Esta ação não pode ser desfeita. Deseja continuar?");
+    const confirm = window.confirm("⚠️ ATENÇÃO: Isso irá apagar permanentemente todas as suas transações, metas, cartões e configurações. Esta ação não pode ser desfeita. Deseja continuar?");
     
     if (!confirm) return;
 
     try {
-      // Apagar tudo relacionado ao usuário
-      await Promise.all([
-        supabase.from('transactions').delete().eq('user_id', user.id),
-        supabase.from('goals').delete().eq('user_id', user.id),
-        supabase.from('credit_cards').delete().eq('user_id', user.id),
-        supabase.from('installments').delete().eq('user_id', user.id),
-        supabase.from('recurrences').delete().eq('user_id', user.id),
-        supabase.from('friend_debts').delete().or(`lender_id.eq.${user.id},debtor_id.eq.${user.id}`)
-      ]);
+      // 1. Apagar dados financeiros das tabelas auxiliares
+      const tables = ['transactions', 'goals', 'credit_cards', 'installments', 'recurrences'];
+      
+      for (const table of tables) {
+        const { error } = await supabase.from(table).delete().eq('user_id', user.id);
+        if (error) console.warn(`Erro ao limpar tabela ${table}:`, error);
+      }
 
+      // 2. Limpar dívidas com amigos (casos onde o usuário é credor ou devedor)
+      const { error: debtError } = await supabase.from('friend_debts').delete().or(`lender_id.eq.${user.id},debtor_id.eq.${user.id}`);
+      if (debtError) console.warn("Erro ao limpar friend_debts:", debtError);
+
+      // 3. Resetar o saldo inicial no perfil do usuário
+      try {
+        await updateInitialBalance(0);
+      } catch (e) {
+        console.warn("Erro ao resetar initial_balance:", e);
+      }
+
+      // 4. Recarregar tudo
       await fetchData();
-      window.alert("Todas as suas informações foram resetadas com sucesso.");
+      
+      window.alert("✅ Todas as suas informações foram resetadas com sucesso. Seu saldo inicial foi definido como R$ 0,00.");
       setActiveSection("dashboard");
     } catch (error) {
-      console.error("Erro ao resetar dados:", error);
-      window.alert("Ocorreu um erro ao resetar seus dados. Por favor, tente novamente.");
+      console.error("Erro crítico ao resetar dados:", error);
+      window.alert("Ocorreu um erro ao resetar seus dados. Alguns dados podem não ter sido apagados.");
     }
   };
 
