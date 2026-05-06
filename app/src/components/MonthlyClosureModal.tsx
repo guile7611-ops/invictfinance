@@ -8,15 +8,16 @@ import { Check, Calendar, AlertCircle, ArrowRight, X } from 'lucide-react';
 
 export default function MonthlyClosureModal() {
   const { 
-    overduePastTransactions, 
+    pastPendingItems, 
     isClosureModalOpen, 
     closeClosureModal,
-    confirmOccurrence,
-    rescheduleToCurrentMonth,
-    ignoreTransaction
+    confirmPastItem,
+    rolloverPastItem,
+    ignorePastItem,
+    selectedMonth
   } = useApp() as any;
 
-  if (!isClosureModalOpen || !overduePastTransactions?.length) return null;
+  if (!isClosureModalOpen || !pastPendingItems?.length) return null;
 
   return (
     <div className="modal-overlay" style={{ zIndex: 1000 }}>
@@ -62,7 +63,7 @@ export default function MonthlyClosureModal() {
           flexDirection: 'column',
           gap: 16
         }}>
-          {overduePastTransactions.map((t: any) => (
+          {pastPendingItems.map((t: any) => (
             <div 
               key={t.id} 
               className="kpi-card" 
@@ -86,11 +87,11 @@ export default function MonthlyClosureModal() {
                       color: 'var(--gray-400)',
                       fontWeight: 700 
                     }}>
-                      {format(parseISO(t.date), "MMMM yyyy", { locale: ptBR })}
+                      {format(parseISO(t.originalDate || t.date || new Date().toISOString()), "MMMM yyyy", { locale: ptBR })}
                     </span>
                     <span className="status-badge" style={{ background: 'rgba(220, 38, 38, 0.1)', color: 'var(--expense)', fontSize: 9 }}>ATRASADO</span>
                   </div>
-                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--gray-900)' }}>{t.description}</h4>
+                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--gray-900)' }}>{t.title || t.description}</h4>
                   <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>{t.category}</span>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -111,7 +112,7 @@ export default function MonthlyClosureModal() {
                 paddingTop: 4
               }}>
                 <button 
-                  onClick={() => confirmOccurrence(t.id, t.amount, t.date)}
+                  onClick={() => confirmPastItem(t.id, t.type)}
                   className="btn-outline"
                   style={{ 
                     fontSize: 11, 
@@ -126,7 +127,7 @@ export default function MonthlyClosureModal() {
                   Confirmar
                 </button>
                 <button 
-                  onClick={() => rescheduleToCurrentMonth(t.id)}
+                  onClick={() => rolloverPastItem(t.id, t.type, selectedMonth)}
                   className="btn-primary"
                   style={{ 
                     fontSize: 11, 
@@ -139,7 +140,7 @@ export default function MonthlyClosureModal() {
                   Mover p/ Hoje
                 </button>
                 <button 
-                  onClick={() => ignoreTransaction(t.id)}
+                  onClick={() => ignorePastItem(t.id, t.type)}
                   className="btn-outline"
                   style={{ 
                     fontSize: 11, 

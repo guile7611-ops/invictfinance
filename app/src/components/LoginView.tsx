@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { User, Lock, Mail, ArrowRight, Loader2, Zap, ArrowLeft, CheckCircle2, ShieldCheck, Key } from "lucide-react";
+import { User, Lock, Mail, ArrowRight, Loader2, Zap, ArrowLeft, CheckCircle2, ShieldCheck, Key, AlertTriangle } from "lucide-react";
 
 
 type AuthMode = "login" | "register" | "forgot" | "verify";
@@ -36,6 +36,19 @@ export default function LoginView() {
     checkDb();
   }, []);
   const [revealedPassword, setRevealedPassword] = useState("");
+  const [showResetModal, setShowResetModal] = useState(false);
+
+  useEffect(() => {
+    const hasSeenReset = localStorage.getItem("invict_db_reset_seen");
+    if (!hasSeenReset) {
+      setShowResetModal(true);
+    }
+  }, []);
+
+  const closeResetModal = () => {
+    localStorage.setItem("invict_db_reset_seen", "true");
+    setShowResetModal(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -289,8 +302,48 @@ export default function LoginView() {
           </div>
         )}
 
-
       </div>
+
+      {/* Modal de Aviso de Reset de Banco */}
+      {showResetModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 9999, padding: 20
+        }}>
+          <div className="card fade-up" style={{
+            width: "100%", maxWidth: 420, padding: "32px", textAlign: "center",
+            background: "white", borderRadius: 24,
+            boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
+            border: "1px solid rgba(255,255,255,0.1)"
+          }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: "50%", background: "#fef2f2",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 20px"
+            }}>
+              <AlertTriangle size={32} color="#dc2626" />
+            </div>
+            <h3 style={{ fontSize: 22, fontWeight: 900, color: "var(--gray-900)", marginBottom: 12, letterSpacing: "-0.5px" }}>
+              Atualização Importante
+            </h3>
+            <p style={{ fontSize: 14, color: "var(--gray-500)", lineHeight: 1.6, marginBottom: 24 }}>
+              Pedimos desculpas pelo transtorno. Migramos nosso banco de dados para uma nova infraestrutura. Por conta dessa quebra de código, <strong>será necessário realizar o seu cadastro novamente.</strong>
+            </p>
+            <button 
+              onClick={() => {
+                closeResetModal();
+                toggleMode("register");
+              }}
+              className="btn-primary"
+              style={{ width: "100%", padding: 16, justifyContent: "center", fontWeight: 700, borderRadius: 14 }}
+            >
+              Entendi, Criar Novo Cadastro
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

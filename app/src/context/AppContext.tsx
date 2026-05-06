@@ -37,6 +37,17 @@ export type QuickConfirmTarget = {
   occurrence: RecurrenceOccurrence | any;
 } | null;
 
+export type PastPendingItem = {
+  id: string;
+  type: 'transaction' | 'occurrence';
+  title: string;
+  amount: number;
+  originalDate: string;
+  category: string;
+  isIncome: boolean;
+  isBill?: boolean;
+};
+
 export type FriendDebt = {
   id: string;
   creator_id: string;
@@ -71,12 +82,18 @@ type AppContextValue = {
   
   installments: any[];
   addInstallment: (i: any) => Promise<void>;
+  updateInstallment: (id: string, updates: any) => Promise<void>;
   removeInstallment: (id: string) => Promise<void>;
   payCardBill: (cardId: string) => Promise<void>;
 
   occurrences: RecurrenceOccurrence[];
   confirmOccurrence: (id: string, realAmount?: number, realDate?: string) => Promise<void>;
   updateOccurrenceStatus: (id: string, status: string) => Promise<void>;
+  
+  pastPendingItems: PastPendingItem[];
+  confirmPastItem: (id: string, type: 'transaction' | 'occurrence') => Promise<void>;
+  rolloverPastItem: (id: string, type: 'transaction' | 'occurrence', targetMonth: string) => Promise<void>;
+  ignorePastItem: (id: string, type: 'transaction' | 'occurrence') => Promise<void>;
   
   quickConfirmTarget: QuickConfirmTarget;
   openQuickConfirm: (o: RecurrenceOccurrence) => void;
@@ -376,14 +393,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateInstallment = async (id: string, updates: any) => {
+    if (!user) return;
+    try {
+      // Find current installment
+      const inst = installments.find(i => i.id === id);
+      if (!inst) throw new Error("Installment not found");
+
+      const dbUpdates: any = {};
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.totalAmount !== undefined) dbUpdates.total_amount = updates.totalAmount;
+      if (updates.installmentAmount !== undefined) dbUpdates.installment_amount = updates.installmentAmount;
+      if (updates.totalInstallments !== undefined) dbUpdates.total_installments = updates.totalInstallments;
+      if (updates.currentInstallment !== undefined) dbUpdates.current_installment = updates.currentInstallment;
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+      if (updates.startDate !== undefined) dbUpdates.start_date = updates.startDate;
+
+      const { error } = await supabase
+        .from('installments')
+        .update(dbUpdates)
+        .eq('id', id);
+
+      if (error) {
+        console.error("Erro Supabase ao atualizar parcelamento:", error);
+        window.alert(`Erro ao atualizar compra: ${error.message}`);
+        throw error;
+      }
+
+      // Se o valor total mudou, ajustar o limite do cartão
+      if (updates.totalAmount !== undefined && updates.totalAmount !== inst.totalAmount) {
+        const diff = updates.totalAmount - inst.totalAmount;
+        const card = cards.find(c => c.id === inst.cardId);
+        if (card) {
+          const newBalance = Math.max(0, (card.usedLimit || 0) + diff);
+          await supabase.from('credit_cards').update({ current_balance: newBalance }).eq('id', inst.cardId);
+        }
+      }
+
+      await fetchData();
+    } catch (error) {
+      console.error("Erro ao atualizar parcelamento:", error);
+    }
+  };
+
   const removeInstallment = async (id: string) => {
     if (!user) return;
     try {
+      const inst = installments.find(i => i.id === id);
       const { error } = await supabase
         .from('installments')
         .delete()
         .eq('id', id);
       if (error) throw error;
+      
+      // Liberar o limite do cartão
+      if (inst) {
+        const card = cards.find(c => c.id === inst.cardId);
+        if (card) {
+          const newBalance = Math.max(0, (card.usedLimit || 0) - inst.totalAmount);
+          await supabase.from('credit_cards').update({ current_balance: newBalance }).eq('id', inst.cardId);
+        }
+      }
+
       fetchData();
     } catch (error) {
       console.error("Erro ao remover parcelamento:", error);
@@ -1041,6 +1112,130 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await fetchData();
   };
 
+  const pastPendingItems = useMemo(() => {
+    return occurrences.filter(o => 
+      (o.status === 'pending' || o.status === 'predicted' || o.status === 'overdue') && 
+      o.dueDate < currentMonth + '-01'
+    ).map(o => ({
+      id: o.id,
+      type: o.isVirtual ? 'occurrence' : 'transaction',
+      title: o.title,
+      amount: o.amount,
+      originalDate: o.dueDate,
+      category: o.category,
+      isIncome: o.type === 'income',
+      isBill: o.isBill
+    }));
+  }, [occurrences, currentMonth]);
+
+  const confirmPastItem = async (id: string, type: 'transaction' | 'occurrence') => {
+    if (id.startsWith('bill-')) {
+      const pastItem = pastPendingItems.find(i => i.id === id);
+      if (!pastItem || !user) return;
+      const { error } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'expense',
+          category: 'Cartão de Crédito',
+          amount: -Math.abs(pastItem.amount),
+          description: pastItem.title,
+          date: pastItem.originalDate,
+          status: 'completed'
+        });
+      if (error) throw error;
+      await fetchData();
+    } else {
+      await confirmOccurrence(id);
+    }
+  };
+
+  const rolloverPastItem = async (id: string, type: 'transaction' | 'occurrence', targetMonth: string) => {
+    if (!user) return;
+    const targetDate = `${targetMonth}-01`;
+
+    if (id.startsWith('v-')) {
+      const parts = id.split('-');
+      const recurrenceId = parts[1];
+      const rec = recurrences.find(r => r.id === recurrenceId);
+      if (!rec) return;
+
+      const { error: insertError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          recurrence_id: rec.id,
+          type: rec.type,
+          category: rec.category,
+          amount: rec.type === 'expense' ? -Math.abs(rec.amount) : Math.abs(rec.amount),
+          description: rec.title,
+          date: new Date().toISOString().split('T')[0],
+          status: 'predicted'
+        });
+      
+      if (insertError) throw insertError;
+
+      const currentRecNext = new Date(rec.nextDueDate);
+      const nextDate = addMonths(currentRecNext, 1);
+      await supabase
+        .from('recurrences')
+        .update({ next_due_date: nextDate.toISOString().split('T')[0] })
+        .eq('id', rec.id);
+
+    } else if (id.startsWith('bill-')) {
+      const pastItem = pastPendingItems.find(i => i.id === id);
+      if (!pastItem) return;
+      await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'expense',
+          category: 'Cartão de Crédito',
+          amount: -Math.abs(pastItem.amount),
+          description: pastItem.title + ' (Atrasada)',
+          date: new Date().toISOString().split('T')[0],
+          status: 'predicted'
+        });
+    } else {
+      await rescheduleToCurrentMonth(id);
+    }
+    await fetchData();
+  };
+
+  const ignorePastItem = async (id: string, type: 'transaction' | 'occurrence') => {
+    if (!user) return;
+    if (id.startsWith('v-')) {
+      const parts = id.split('-');
+      const recurrenceId = parts[1];
+      const rec = recurrences.find(r => r.id === recurrenceId);
+      if (!rec) return;
+
+      const currentRecNext = new Date(rec.nextDueDate);
+      const nextDate = addMonths(currentRecNext, 1);
+      await supabase
+        .from('recurrences')
+        .update({ next_due_date: nextDate.toISOString().split('T')[0] })
+        .eq('id', rec.id);
+    } else if (id.startsWith('bill-')) {
+      const pastItem = pastPendingItems.find(i => i.id === id);
+      if (!pastItem) return;
+      await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'expense',
+          category: 'Cartão de Crédito',
+          amount: -Math.abs(pastItem.amount),
+          description: pastItem.title,
+          date: pastItem.originalDate,
+          status: 'cancelled'
+        });
+    } else if (!id.startsWith('debt-')) {
+      await ignoreTransaction(id);
+    }
+    await fetchData();
+  };
+
   const rescheduleToCurrentMonth = async (transactionId: string) => {
     if (!user) return;
     const today = new Date().toISOString().split('T')[0];
@@ -1137,6 +1332,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         removeCard,
         installments,
         addInstallment,
+        updateInstallment,
         removeInstallment,
         payCardBill,
         friendDebts,
@@ -1149,6 +1345,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           await supabase.from('transactions').update({ status }).eq('id', id);
           fetchData();
         },
+        pastPendingItems,
+        confirmPastItem,
+        rolloverPastItem,
+        ignorePastItem,
         quickConfirmTarget,
         openQuickConfirm,
         closeQuickConfirm,
