@@ -63,27 +63,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 2. Carregar sessão e perfis do Supabase em background
   useEffect(() => {
     const initAuth = async () => {
+      // Failsafe: Se em 6 segundos nada acontecer, libera a UI para não travar o usuário
+      const timeout = setTimeout(() => {
+        console.warn("Auth check timed out. Forcing UI release.");
+        setIsLoaded(true);
+      }, 6000);
+
       try {
-        // Usamos getUser() em vez de getSession() para forçar a verificação no servidor
-        // Isso resolve o problema de usuários que foram deletados do banco (reset de DB)
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        // 1. Pega a sessão local (rápido)
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (authUser && !authError) {
-          // Usuário existe no banco de dados atual
-          setIsLoaded(true); 
-          refreshUserData(authUser.id);
+        if (session?.user) {
+          // 2. Se tem sessão, verifica se o usuário ainda é válido no novo banco
+          const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+          
+          if (authUser && !authError) {
+            // Tudo certo, usuário existe no banco novo
+            setIsLoaded(true);
+            refreshUserData(authUser.id);
+          } else {
+            // Sessão existe no navegador, mas o usuário foi deletado do banco
+            console.log("Sessão antiga detectada (usuário não existe no novo banco). Limpando...");
+            setIsLoaded(true);
+            setUser(null);
+            localStorage.removeItem('dash_user_cache_v2');
+            await supabase.auth.signOut();
+          }
         } else {
-          // Se não houver usuário ou o token for inválido para o banco novo
+          // Sem sessão
           setIsLoaded(true);
           setUser(null);
           localStorage.removeItem('dash_user_cache_v2');
-          // Garantir que o Supabase também saiba que a sessão acabou
-          await supabase.auth.signOut();
         }
       } catch (err) {
-        console.error("Auth init error:", err);
+        console.error("Erro crítico na inicialização do Auth:", err);
         setIsLoaded(true);
       } finally {
+        clearTimeout(timeout);
         fetchAllProfiles();
       }
     };
