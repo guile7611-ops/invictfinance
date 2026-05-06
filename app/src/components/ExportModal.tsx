@@ -141,32 +141,32 @@ export default function ExportModal() {
 
   return (
     <div className="modal-overlay" onClick={closeExportModal} style={{ zIndex: 10000 }}>
-      <div className="modal-panel fade-up" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
-        <div className="modal-header">
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div className="icon-container" style={{ background: "var(--green-50)", color: "var(--green-600)" }}>
-              <Download size={20} />
+      <div className="modal-panel fade-up" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
+        <div className="modal-header" style={{ padding: "24px 32px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div className="icon-container" style={{ width: 48, height: 48, borderRadius: 14, background: "var(--green-50)", color: "var(--green-600)", display: "flex", alignItems: "center", justifyCenter: "center" }}>
+              <div style={{ margin: "auto" }}><Download size={24} /></div>
             </div>
             <div>
-              <h3 className="modal-title">Exportar Dados</h3>
-              <p className="modal-subtitle">Escolha o período e formato do extrato</p>
+              <h3 className="modal-title" style={{ fontSize: 18 }}>Exportar Dados</h3>
+              <p className="modal-subtitle" style={{ fontSize: 13 }}>Escolha o período e formato do extrato</p>
             </div>
           </div>
-          <button className="btn-close" onClick={closeExportModal} aria-label="Fechar">
+          <button className="btn-close" onClick={closeExportModal} aria-label="Fechar" style={{ marginLeft: "auto" }}>
             <X size={20} />
           </button>
         </div>
 
-        <div className="modal-body" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="modal-form" style={{ padding: "32px", gap: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
             <div className="form-group">
               <label className="form-label">Data Início</label>
               <div style={{ position: "relative" }}>
-                <Calendar size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }} />
+                <Calendar size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }} />
                 <input 
                   type="date" 
                   className="form-input" 
-                  style={{ paddingLeft: 36 }}
+                  style={{ paddingLeft: 40, height: 48 }}
                   value={startDate}
                   onChange={e => setStartDate(e.target.value)}
                 />
@@ -175,11 +175,11 @@ export default function ExportModal() {
             <div className="form-group">
               <label className="form-label">Data Fim</label>
               <div style={{ position: "relative" }}>
-                <Calendar size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }} />
+                <Calendar size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }} />
                 <input 
                   type="date" 
                   className="form-input" 
-                  style={{ paddingLeft: 36 }}
+                  style={{ paddingLeft: 40, height: 48 }}
                   value={endDate}
                   onChange={e => setEndDate(e.target.value)}
                 />
@@ -189,7 +189,7 @@ export default function ExportModal() {
 
           <div className="form-group">
             <label className="form-label">Formato do Arquivo</label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <button 
                 type="button"
                 className={`btn-secondary ${format === 'pdf' ? 'active' : ''}`}
@@ -197,20 +197,34 @@ export default function ExportModal() {
                 style={{ 
                   justifyContent: "center", 
                   gap: 12, 
-                  padding: "16px 12px",
+                  padding: "24px 16px",
                   height: "auto",
-                  borderColor: format === 'pdf' ? 'var(--green-600)' : 'var(--gray-200)',
-                  background: format === 'pdf' ? 'var(--green-50)' : 'white',
+                  borderWidth: 2,
+                  borderColor: format === 'pdf' ? 'var(--green-600)' : 'var(--gray-100)',
+                  background: format === 'pdf' ? 'var(--green-50)' : 'var(--gray-50)',
                   color: format === 'pdf' ? 'var(--green-700)' : 'var(--gray-600)',
                   flexDirection: "column",
                   alignItems: "center",
-                  textAlign: "center"
+                  textAlign: "center",
+                  borderRadius: 16
                 }}
               >
-                <FileText size={24} />
+                <div style={{ 
+                  width: 48, 
+                  height: 48, 
+                  borderRadius: "50%", 
+                  background: format === 'pdf' ? 'white' : 'transparent',
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 4,
+                  boxShadow: format === 'pdf' ? "0 4px 12px rgba(0,0,0,0.05)" : "none"
+                }}>
+                  <FileText size={24} />
+                </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>PDF</div>
-                  <div style={{ fontSize: 10, opacity: 0.8 }}>Layout de Extrato</div>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>PDF</div>
+                  <div style={{ fontSize: 11, opacity: 0.8 }}>Layout de Extrato</div>
                 </div>
               </button>
 
@@ -221,42 +235,56 @@ export default function ExportModal() {
                 style={{ 
                   justifyContent: "center", 
                   gap: 12, 
-                  padding: "16px 12px",
+                  padding: "24px 16px",
                   height: "auto",
-                  borderColor: format === 'csv' ? 'var(--green-600)' : 'var(--gray-200)',
-                  background: format === 'csv' ? 'var(--green-50)' : 'white',
+                  borderWidth: 2,
+                  borderColor: format === 'csv' ? 'var(--green-600)' : 'var(--gray-100)',
+                  background: format === 'csv' ? 'var(--green-50)' : 'var(--gray-50)',
                   color: format === 'csv' ? 'var(--green-700)' : 'var(--gray-600)',
                   flexDirection: "column",
                   alignItems: "center",
-                  textAlign: "center"
+                  textAlign: "center",
+                  borderRadius: 16
                 }}
               >
-                <Download size={24} />
+                <div style={{ 
+                  width: 48, 
+                  height: 48, 
+                  borderRadius: "50%", 
+                  background: format === 'csv' ? 'white' : 'transparent',
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 4,
+                  boxShadow: format === 'csv' ? "0 4px 12px rgba(0,0,0,0.05)" : "none"
+                }}>
+                  <Download size={24} />
+                </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>CSV</div>
-                  <div style={{ fontSize: 10, opacity: 0.8 }}>Planilha Excel</div>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>CSV</div>
+                  <div style={{ fontSize: 11, opacity: 0.8 }}>Planilha Excel</div>
                 </div>
               </button>
             </div>
           </div>
 
-          <div style={{ padding: "12px 16px", background: "var(--gray-50)", borderRadius: 12, border: "1px dashed var(--gray-200)" }}>
-            <p style={{ margin: 0, fontSize: 12, color: "var(--gray-500)", lineHeight: 1.5 }}>
+          <div style={{ padding: "16px 20px", background: "var(--gray-50)", borderRadius: 16, border: "1px solid var(--gray-100)" }}>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--gray-500)", lineHeight: 1.6 }}>
               O extrato PDF incluirá o logotipo da <strong>Invict Finance</strong>, resumo de totais por período e tabela detalhada de lançamentos.
             </p>
           </div>
         </div>
 
-        <div className="modal-footer" style={{ display: "flex", gap: 12, padding: "20px 24px" }}>
-          <button className="btn-secondary" onClick={closeExportModal} style={{ flex: 1, justifyContent: "center" }}>
+        <div className="modal-footer" style={{ display: "flex", gap: 16, padding: "24px 32px", borderTop: "1px solid var(--gray-100)" }}>
+          <button className="btn-secondary" onClick={closeExportModal} style={{ flex: 1, justifyContent: "center", height: 48, borderRadius: 12 }}>
             Cancelar
           </button>
           <button 
             className="btn-primary" 
-            style={{ flex: 1.5, justifyContent: "center", gap: 8 }}
+            style={{ flex: 1.5, justifyContent: "center", gap: 12, height: 48, borderRadius: 12, fontSize: 14 }}
             onClick={handleExport}
           >
-            <Download size={18} />
+            <Download size={20} />
             Gerar {format.toUpperCase()}
           </button>
         </div>
