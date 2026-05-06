@@ -141,7 +141,7 @@ export default function ExportModal() {
 
   return (
     <div className="modal-overlay" onClick={closeExportModal} style={{ zIndex: 10000 }}>
-      <div className="modal-content fade-up" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
+      <div className="modal-panel fade-up" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
         <div className="modal-header">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div className="icon-container" style={{ background: "var(--green-50)", color: "var(--green-600)" }}>
@@ -191,43 +191,51 @@ export default function ExportModal() {
             <label className="form-label">Formato do Arquivo</label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <button 
-                className={`btn-outline ${format === 'pdf' ? 'active' : ''}`}
+                type="button"
+                className={`btn-secondary ${format === 'pdf' ? 'active' : ''}`}
                 onClick={() => setFormat('pdf')}
                 style={{ 
                   justifyContent: "center", 
-                  gap: 8, 
-                  padding: 16,
+                  gap: 12, 
+                  padding: "16px 12px",
+                  height: "auto",
                   borderColor: format === 'pdf' ? 'var(--green-600)' : 'var(--gray-200)',
                   background: format === 'pdf' ? 'var(--green-50)' : 'white',
-                  color: format === 'pdf' ? 'var(--green-700)' : 'var(--gray-600)'
+                  color: format === 'pdf' ? 'var(--green-700)' : 'var(--gray-600)',
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center"
                 }}
               >
-                <FileText size={20} />
-                <div style={{ textAlign: "left" }}>
+                <FileText size={24} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>PDF</div>
                   <div style={{ fontSize: 10, opacity: 0.8 }}>Layout de Extrato</div>
                 </div>
-                {format === 'pdf' && <CheckCircle2 size={14} style={{ marginLeft: "auto" }} />}
               </button>
 
               <button 
-                className={`btn-outline ${format === 'csv' ? 'active' : ''}`}
+                type="button"
+                className={`btn-secondary ${format === 'csv' ? 'active' : ''}`}
                 onClick={() => setFormat('csv')}
                 style={{ 
                   justifyContent: "center", 
-                  gap: 8, 
-                  padding: 16,
+                  gap: 12, 
+                  padding: "16px 12px",
+                  height: "auto",
                   borderColor: format === 'csv' ? 'var(--green-600)' : 'var(--gray-200)',
                   background: format === 'csv' ? 'var(--green-50)' : 'white',
-                  color: format === 'csv' ? 'var(--green-700)' : 'var(--gray-600)'
+                  color: format === 'csv' ? 'var(--green-700)' : 'var(--gray-600)',
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center"
                 }}
               >
-                <Download size={20} />
-                <div style={{ textAlign: "left" }}>
+                <Download size={24} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>CSV</div>
                   <div style={{ fontSize: 10, opacity: 0.8 }}>Planilha Excel</div>
                 </div>
-                {format === 'csv' && <CheckCircle2 size={14} style={{ marginLeft: "auto" }} />}
               </button>
             </div>
           </div>
@@ -239,13 +247,13 @@ export default function ExportModal() {
           </div>
         </div>
 
-        <div className="modal-footer" style={{ border: "none", paddingTop: 0 }}>
-          <button className="btn-outline" onClick={closeExportModal} style={{ flex: 1, justifyContent: "center" }}>
+        <div className="modal-footer" style={{ display: "flex", gap: 12, padding: "20px 24px" }}>
+          <button className="btn-secondary" onClick={closeExportModal} style={{ flex: 1, justifyContent: "center" }}>
             Cancelar
           </button>
           <button 
             className="btn-primary" 
-            style={{ flex: 2, justifyContent: "center", gap: 8 }}
+            style={{ flex: 1.5, justifyContent: "center", gap: 8 }}
             onClick={handleExport}
           >
             <Download size={18} />
