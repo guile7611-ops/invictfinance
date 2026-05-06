@@ -64,17 +64,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Usamos getUser() em vez de getSession() para forçar a verificação no servidor
+        // Isso resolve o problema de usuários que foram deletados do banco (reset de DB)
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
         
-        if (session?.user) {
-          // Já temos o token de sessão, podemos liberar a UI
+        if (authUser && !authError) {
+          // Usuário existe no banco de dados atual
           setIsLoaded(true); 
-          // Atualiza dados extras (nome, saldo inicial, etc) em background
-          refreshUserData(session.user.id);
+          refreshUserData(authUser.id);
         } else {
+          // Se não houver usuário ou o token for inválido para o banco novo
           setIsLoaded(true);
           setUser(null);
           localStorage.removeItem('dash_user_cache_v2');
+          // Garantir que o Supabase também saiba que a sessão acabou
+          await supabase.auth.signOut();
         }
       } catch (err) {
         console.error("Auth init error:", err);
@@ -89,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         if (session?.user) refreshUserData(session.user.id);
-      } else if (event === 'SIGNED_OUT') {
+      } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         setUser(null);
         localStorage.removeItem('dash_user_cache_v2');
         setIsLoaded(true);
@@ -153,15 +157,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(fullUser);
         localStorage.setItem('dash_user_cache_v2', JSON.stringify(fullUser));
 
-      } else if (!profile && !profileError) {
-        // Fallback para usuário básico se o perfil ainda não existir ou falhar
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
+      } else {
+        // Se o perfil não foi encontrado, verificamos se a conta de Auth ainda existe no banco
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (!authUser) {
+          // Usuário não existe no Auth nem no Profile -> Deslogar
+          logout();
+        } else {
+          // Usuário existe no Auth mas não tem Profile -> Fallback para básico
           setUser({
-            id: session.user.id,
-            email: session.user.email || "",
-            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || "Usuário",
-            username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || "user",
+            id: authUser.id,
+            email: authUser.email || "",
+            name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || "Usuário",
+            username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || "user",
             friendIds: [],
           } as any);
         }
