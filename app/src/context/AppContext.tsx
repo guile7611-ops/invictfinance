@@ -149,6 +149,12 @@ type AppContextValue = {
   setViewMode: (mode: 'Mês' | 'Trimestre' | 'Ano') => void;
   displayMode: 'grid' | 'timeline';
   setDisplayMode: (mode: 'grid' | 'timeline') => void;
+  
+  overduePastTransactions: Transaction[];
+  isClosureModalOpen: boolean;
+  closeClosureModal: () => void;
+  rescheduleToCurrentMonth: (id: string, type?: string) => Promise<void>;
+  ignoreTransaction: (id: string, type?: string) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -1118,7 +1124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       o.dueDate < currentMonth + '-01'
     ).map(o => ({
       id: o.id,
-      type: o.isVirtual ? 'occurrence' : 'transaction',
+      type: (o.isVirtual ? 'occurrence' : 'transaction') as 'occurrence' | 'transaction',
       title: o.title,
       amount: o.amount,
       originalDate: o.dueDate,
