@@ -46,13 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 1. Tentar recuperar cache síncrono para velocidade "Liso"
   useEffect(() => {
-    const cachedUser = localStorage.getItem('dash_user_cache');
+    // Forçar limpeza do cache antigo para resolver travamentos de versão anterior
+    localStorage.removeItem('dash_user_cache');
+
+    const cachedUser = localStorage.getItem('dash_user_cache_v2');
     if (cachedUser) {
       try {
         const parsed = JSON.parse(cachedUser);
         setUser(parsed);
       } catch (e) {
-        localStorage.removeItem('dash_user_cache');
+        localStorage.removeItem('dash_user_cache_v2');
       }
     }
   }, []);
@@ -71,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setIsLoaded(true);
           setUser(null);
-          localStorage.removeItem('dash_user_cache');
+          localStorage.removeItem('dash_user_cache_v2');
         }
       } catch (err) {
         console.error("Auth init error:", err);
@@ -88,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) refreshUserData(session.user.id);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
-        localStorage.removeItem('dash_user_cache');
+        localStorage.removeItem('dash_user_cache_v2');
         setIsLoaded(true);
       }
     });
@@ -148,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
 
         setUser(fullUser);
-        localStorage.setItem('dash_user_cache', JSON.stringify(fullUser));
+        localStorage.setItem('dash_user_cache_v2', JSON.stringify(fullUser));
 
       } else if (!profile && !profileError) {
         // Fallback para usuário básico se o perfil ainda não existir ou falhar
